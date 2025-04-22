@@ -96,12 +96,15 @@ To run this project, clone the repository, install dependencies, and run the ser
 ```bash
 # Clone the repository
 git clone https://github.com/yourusername/postmanclone.git
-cd postmanclone
+cd API-Master
 
 # Frontend Setup
-cd client
+cd frontend
 npm install
+npm run dev
 
 # Backend Setup
-cd ../server
+cd ../backend
 npm install
+node server.js
+node auth.js
