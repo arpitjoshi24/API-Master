@@ -40,7 +40,7 @@ export default function Sidebar({ onNewRequest }) {
     <div className="w-full bg-gray-900 text-white h-full  flex flex-col">
       {/* Header */}
       <div className="flex items-center justify-between px-4 py-3 border-b border-gray-700">
-        <span className="text-sm font-semibold tracking-wide">PostWomen</span>
+        <span className="text-sm font-semibold tracking-wide">API-Master</span>
         <button className="text-gray-400 hover:text-white" onClick={handleReload}>
           &#x21bb;
         </button>

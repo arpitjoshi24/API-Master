@@ -14,6 +14,7 @@ export default function OutputEditor({
   const [activeTab, setActiveTab] = useState('Response');
   const [formattedSize, setFormattedSize] = useState('0.00');
   const [maxLength, setMaxLength] = useState(500); // Default truncation length
+  const [isTruncated, setIsTruncated] = useState(true); // State to toggle truncation
 
   
   useEffect(() => {
@@ -23,9 +24,13 @@ export default function OutputEditor({
 
   const handleTabClick = useCallback((tab) => setActiveTab(tab), []);
 
+  const toggleTruncation = () => {
+    setIsTruncated(!isTruncated); // Toggle the truncation state
+  };
+
   const truncateResponse = (response) => {
     const responseStr = JSON.stringify(response, null, 2);
-    return responseStr.length > maxLength ? responseStr.slice(0, maxLength) + '...' : responseStr;
+    return isTruncated && responseStr.length > maxLength ? responseStr.slice(0, maxLength) + '...' : responseStr;
   };
 
   const parseCookies = (cookieStr) => {
@@ -41,9 +46,11 @@ export default function OutputEditor({
     switch (activeTab) {
       case 'Response':
         return (
-          <pre className="text-green-300 whitespace-pre-wrap">
-            {truncateResponse(response) || 'No response received.'}
-          </pre>
+          <div>
+            <pre className="text-green-300 whitespace-pre-wrap">
+              {truncateResponse(response) || 'No response received.'}
+            </pre>
+          </div>
         );
 
       case 'Headers':
@@ -55,7 +62,7 @@ export default function OutputEditor({
           </pre>
         );
 
-      case 'Cookies':
+      case 'Cookies': {
         const parsedCookies = parseCookies(cookies);
         return (
           <pre className="text-blue-300 whitespace-pre-wrap">
@@ -64,6 +71,7 @@ export default function OutputEditor({
               : 'No cookies available.'}
           </pre>
         );
+      }
 
       case 'Results':
         return Array.isArray(testResults) && testResults.length > 0 ? (
@@ -80,9 +88,19 @@ export default function OutputEditor({
         ) : (
           <p className="text-gray-400">No test results.</p>
         );
+
       default:
         return null;
     }
+  };
+
+  // Function to get the status color based on the status code
+  const getStatusColor = (statusCode) => {
+    if (statusCode >= 200 && statusCode < 300) return 'text-green-400'; // Success
+    if (statusCode >= 300 && statusCode < 400) return 'text-yellow-400'; // Redirection
+    if (statusCode >= 400 && statusCode < 500) return 'text-red-400'; // Client error
+    if (statusCode >= 500 && statusCode < 600) return 'text-red-600'; // Server error
+    return 'text-gray-400'; // Default color
   };
 
   return (
@@ -91,7 +109,9 @@ export default function OutputEditor({
       <div className="flex space-x-6 mb-4 text-sm">
         <div>
           <span className="font-semibold">Status:</span>{' '}
-          {status?.code ? `${status.code} ${status?.text || ''}` : '—'}
+          <span className={getStatusColor(status?.code)}>
+            {status?.code ? `${status.code} ${status?.text || ''}` : '—'}
+          </span>
         </div>
         <div>
           <span className="font-semibold">Size:</span> {formattedSize} KB
@@ -118,8 +138,18 @@ export default function OutputEditor({
         ))}
       </div>
 
+      {/* Toggle Button for Truncation/Formatted */}
+      {activeTab === 'Response' && (
+        <button
+          onClick={toggleTruncation}
+          className="absolute top-4 right-4 bg-blue-500 text-white px-4 py-2 rounded-lg shadow-md hover:bg-blue-600"
+        >
+          {isTruncated ? 'Truncated' : 'Formatted'}
+        </button>
+      )}
+
       {/* Content */}
-      <div className="flex-1 overflow-auto bg-gray-800 p-4 rounded text-sm">
+      <div className="flex-1 overflow-auto bg-gray-800 p-4 rounded text-sm relative">
         {renderContent()}
       </div>
     </div>
