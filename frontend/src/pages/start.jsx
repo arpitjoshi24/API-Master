@@ -1,9 +1,10 @@
 import React from 'react'
 
-export default function start() {
+export default function Start() {
   return (
-    <div>
-<h2 className='bg-red-400'>hlo</h2>
+    <div className='bg-black'>
+    <h2 className='text-white'>Postmen</h2>
+    
     </div>
   )
 }
