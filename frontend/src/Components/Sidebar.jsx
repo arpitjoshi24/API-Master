@@ -3,7 +3,7 @@ import Collection from './Collection';
 import Activity from './Activity';
 import Environment from './Environment';
 
-export default function Sidebar() {
+export default function Sidebar({ onNewRequest }) {
   const [activeTab, setActiveTab] = useState("Activity");
   const [previousRequests, setPreviousRequests] = useState([]);
   const [collections, setCollections] = useState([]);
@@ -37,10 +37,10 @@ export default function Sidebar() {
   };
 
   return (
-    <div className="w-76 bg-gray-900 text-white h-full  flex flex-col">
+    <div className="w-full bg-gray-900 text-white h-full  flex flex-col">
       {/* Header */}
       <div className="flex items-center justify-between px-4 py-3 border-b border-gray-700">
-        <span className="text-sm font-semibold tracking-wide">PostWomen</span>
+        <span className="text-sm font-semibold tracking-wide">API-Master</span>
         <button className="text-gray-400 hover:text-white" onClick={handleReload}>
           &#x21bb;
         </button>
@@ -48,12 +48,13 @@ export default function Sidebar() {
 
       {/* New Request Button */}
       <div className="px-4 py-3 border-b border-gray-700">
-        <button
-          className="bg-blue-600 text-white text-sm px-4 py-2 rounded w-full hover:bg-blue-700"
-          onClick={() => console.log("New Request Button Clicked")}
-        >
-          New Request
-        </button>
+      <button
+        className="bg-blue-600 text-white text-sm px-4 py-2 rounded w-full hover:bg-blue-700"
+        onClick={onNewRequest}
+      >
+        New Request
+      </button>
+
       </div>
 
       {/* Tabs */}
@@ -69,14 +70,6 @@ export default function Sidebar() {
         ))}
       </div>
 
-      {/* Filter Input */}
-      <div className="px-4 py-2 border-b border-gray-700">
-        <input
-          type="text"
-          placeholder="filter environment"
-          className="w-full px-2 py-1 bg-gray-800 text-sm text-white placeholder-gray-500 rounded"
-        />
-      </div>
 
       {/* Content */}
       <div className="px-4  flex-1 overflow-y-auto">
