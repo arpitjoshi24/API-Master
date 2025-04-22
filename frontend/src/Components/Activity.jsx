@@ -9,7 +9,7 @@ export default function Activity() {
   }, []);
 
   return (
-    <div className="p-6 max-w-4xl mx-auto">
+    <div className="px-2  overflow-y-hidden">
       <h2 className="text-2xl font-semibold mb-6 text-gray-100">Activity History</h2>
       {requests.length === 0 ? (
         <p className="text-sm text-gray-400 text-center">No activity yet.</p>

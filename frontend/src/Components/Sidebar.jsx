@@ -37,7 +37,7 @@ export default function Sidebar() {
   };
 
   return (
-    <div className="w-76 bg-gray-900 text-white h-screen flex flex-col">
+    <div className="w-76 bg-gray-900 text-white h-full  flex flex-col">
       {/* Header */}
       <div className="flex items-center justify-between px-4 py-3 border-b border-gray-700">
         <span className="text-sm font-semibold tracking-wide">PostWomen</span>
@@ -79,7 +79,7 @@ export default function Sidebar() {
       </div>
 
       {/* Content */}
-      <div className="px-4 py-8 flex-1 overflow-y-auto">
+      <div className="px-4  flex-1 overflow-y-auto">
         {activeTab === 'Activity' && (
           <div className="px-4 py-8">
            <Activity/>

@@ -1,19 +1,24 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 
 export default function Collection() {
-  const [collections, setCollections] = useState([
-    { id: 1, name: 'User APIs', requests: [] },
-    { id: 2, name: 'Product APIs', requests: [] },
-  ]);
+  const [collections, setCollections] = useState(() => {
+    const saved = localStorage.getItem('collections');
+    return saved ? JSON.parse(saved) : [];
+  });
 
   const [newCollectionName, setNewCollectionName] = useState('');
-  const [newApiData, setNewApiData] = useState({}); // { collectionId: { title: '', description: '' } }
+  const [newApiData, setNewApiData] = useState({});
+
+  // Save collections to localStorage whenever they change
+  useEffect(() => {
+    localStorage.setItem('collections', JSON.stringify(collections));
+  }, [collections]);
 
   const handleAddCollection = () => {
     if (!newCollectionName.trim()) return;
     const newCollection = {
       id: Date.now(),
-      name: newCollectionName,
+      name: newCollectionName.trim(),
       requests: []
     };
     setCollections([...collections, newCollection]);
@@ -53,7 +58,7 @@ export default function Collection() {
   };
 
   return (
-    <div className="p-6 max-w-4xl mx-auto">
+    <div className=" max-w-4xl mx-auto">
       <h2 className="text-2xl font-semibold mb-6 text-gray-100">Collections</h2>
 
       {/* Add Collection */}

@@ -40,7 +40,7 @@ export default function Environment() {
   };
 
   return (
-    <div className="p-6 max-w-4xl mx-auto text-white bg-gray-900 min-h-screen">
+    <div className="p-6  overflow-y-hidden mx-auto text-white bg-gray-900 min-h-screen">
       <h2 className="text-2xl font-semibold mb-6">Environments</h2>
 
       {/* Add new environment */}

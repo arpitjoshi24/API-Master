@@ -5,7 +5,7 @@ export default function App() {
   return (
     <div className="flex flex-row h-screen w-screen bg-gray-900 text-white">
       
-      <div className="w-[300px] bg-gray-800">
+      <div className=" bg-gray-800">
         <Sidebar />
       </div>
 
