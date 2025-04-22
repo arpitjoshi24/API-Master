@@ -16,7 +16,6 @@ export default function OutputEditor({
   const [maxLength, setMaxLength] = useState(500); // Default truncation length
   const [isTruncated, setIsTruncated] = useState(true); // State to toggle truncation
 
-  
   useEffect(() => {
     const size = response && typeof response === 'object' ? JSON.stringify(response)?.length : 0;
     setFormattedSize((size / 1024).toFixed(2));
@@ -94,13 +93,41 @@ export default function OutputEditor({
     }
   };
 
-  // Function to get the status color based on the status code
   const getStatusColor = (statusCode) => {
     if (statusCode >= 200 && statusCode < 300) return 'text-green-400'; // Success
     if (statusCode >= 300 && statusCode < 400) return 'text-yellow-400'; // Redirection
     if (statusCode >= 400 && statusCode < 500) return 'text-red-400'; // Client error
     if (statusCode >= 500 && statusCode < 600) return 'text-red-600'; // Server error
     return 'text-gray-400'; // Default color
+  };
+
+  const exportToFile = () => {
+    let content = '';
+
+    switch (activeTab) {
+      case 'Response':
+        content = JSON.stringify(response, null, 2);
+        break;
+      case 'Headers':
+        content = JSON.stringify(headers, null, 2);
+        break;
+      case 'Cookies':
+        content = JSON.stringify(parseCookies(cookies), null, 2);
+        break;
+      case 'Results':
+        content = JSON.stringify(testResults, null, 2);
+        break;
+      default:
+        content = '';
+        break;
+    }
+
+    // Create a Blob and initiate the download
+    const blob = new Blob([content], { type: 'application/json' });
+    const link = document.createElement('a');
+    link.href = URL.createObjectURL(blob);
+    link.download = `${activeTab}.json`; // Name of the file based on the active tab
+    link.click();
   };
 
   return (
@@ -147,6 +174,16 @@ export default function OutputEditor({
           {isTruncated ? 'Truncated' : 'Formatted'}
         </button>
       )}
+
+      {/* Export Button */}
+      <div className='flex justify-end my-2'>
+      <button
+        onClick={exportToFile}
+        className="mt-2 bg-green-500 text-white w-40 px-4 py-2 rounded-lg shadow-md hover:bg-green-600"
+      >
+        Export {activeTab}
+      </button>
+      </div>
 
       {/* Content */}
       <div className="flex-1 overflow-auto bg-gray-800 p-4 rounded text-sm relative">
