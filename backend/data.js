@@ -1,6 +1,10 @@
 const express = require('express');
+const cors = require('cors'); // ✅ add this
+
 const app = express();
 const port = 4000;
+
+app.use(cors({ origin: 'http://localhost:5173' })); // ✅ allow your frontend
 
 app.use(express.json());
 
