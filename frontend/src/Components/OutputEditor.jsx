@@ -1,22 +1,46 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 
 const tabs = ['Response', 'Headers', 'Cookies', 'Results', 'Docs'];
 
-export default function OutputEditor({ response = {}, headers = {}, status = {}, time = 0 }) {
+export default function OutputEditor({
+  response = {},
+  headers = {},
+  status = {},
+  time = 0,
+  testResults = [],
+  cookies = ''
+}) {
   const [activeTab, setActiveTab] = useState('Response');
   const [formattedSize, setFormattedSize] = useState('0.00');
+  const [maxLength, setMaxLength] = useState(500); // Default truncation length
 
   useEffect(() => {
-    const size = JSON.stringify(response)?.length || 0;
+    const size = response && typeof response === 'object' ? JSON.stringify(response)?.length : 0;
     setFormattedSize((size / 1024).toFixed(2));
   }, [response]);
+
+  const handleTabClick = useCallback((tab) => setActiveTab(tab), []);
+
+  const truncateResponse = (response) => {
+    const responseStr = JSON.stringify(response, null, 2);
+    return responseStr.length > maxLength ? responseStr.slice(0, maxLength) + '...' : responseStr;
+  };
+
+  const parseCookies = (cookieStr) => {
+    const cookies = cookieStr.split(';').reduce((acc, cookie) => {
+      const [key, value] = cookie.split('=').map((item) => item.trim());
+      if (key && value) acc[key] = value;
+      return acc;
+    }, {});
+    return cookies;
+  };
 
   const renderContent = () => {
     switch (activeTab) {
       case 'Response':
         return (
           <pre className="text-green-300 whitespace-pre-wrap">
-            {JSON.stringify(response, null, 2) || 'No response received.'}
+            {truncateResponse(response) || 'No response received.'}
           </pre>
         );
 
@@ -30,10 +54,30 @@ export default function OutputEditor({ response = {}, headers = {}, status = {},
         );
 
       case 'Cookies':
-        return <p className="text-gray-400">Cookie parsing not implemented yet.</p>;
+        const parsedCookies = parseCookies(cookies);
+        return (
+          <pre className="text-blue-300 whitespace-pre-wrap">
+            {Object.keys(parsedCookies).length > 0
+              ? JSON.stringify(parsedCookies, null, 2)
+              : 'No cookies available.'}
+          </pre>
+        );
 
       case 'Results':
-        return <p className="text-gray-400">You can add assertions or test results here later.</p>;
+        return Array.isArray(testResults) && testResults.length > 0 ? (
+          <ul className="space-y-1">
+            {testResults.map((test, index) => (
+              <li key={index} className={`text-sm ${test.passed ? 'text-green-400' : 'text-red-400'}`}>
+                ✔ {test.description}
+                {!test.passed && test.error && (
+                  <div className="ml-4 text-red-300 text-xs">Error: {test.error}</div>
+                )}
+              </li>
+            ))}
+          </ul>
+        ) : (
+          <p className="text-gray-400">No test results.</p>
+        );
 
       case 'Docs':
         return <p className="text-gray-400">Documentation preview coming soon...</p>;
@@ -49,7 +93,7 @@ export default function OutputEditor({ response = {}, headers = {}, status = {},
       <div className="flex space-x-6 mb-4 text-sm">
         <div>
           <span className="font-semibold">Status:</span>{' '}
-          {status.code ? `${status.code} ${status.text || ''}` : '—'}
+          {status?.code ? `${status.code} ${status?.text || ''}` : '—'}
         </div>
         <div>
           <span className="font-semibold">Size:</span> {formattedSize} KB
@@ -64,7 +108,7 @@ export default function OutputEditor({ response = {}, headers = {}, status = {},
         {tabs.map((tab) => (
           <div
             key={tab}
-            onClick={() => setActiveTab(tab)}
+            onClick={() => handleTabClick(tab)}
             className={`pb-2 cursor-pointer ${
               activeTab === tab
                 ? 'border-b-2 border-blue-500 font-semibold'
