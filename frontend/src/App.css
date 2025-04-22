@@ -1,0 +1,6 @@
+.gutter {
+    background-color: #2d3748; /* Tailwind gray-800 */
+    cursor: col-resize;
+    width: 10px;
+  }
+  

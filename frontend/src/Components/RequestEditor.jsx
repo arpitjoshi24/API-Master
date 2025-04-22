@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 
 const RequestEditor = ({ onResponse }) => {
   const [method, setMethod] = useState('GET');
-  const [url, setUrl] = useState('http://localhost:5000/api/data');
+  const [url, setUrl] = useState();
   const [activeTab, setActiveTab] = useState('Query');
   const [queryParams, setQueryParams] = useState([{ key: '', value: '', enabled: true }]);
   const [bodyType, setBodyType] = useState("none"); // Body type selection (none, json, form)
@@ -179,7 +179,7 @@ const RequestEditor = ({ onResponse }) => {
       </div>
 
       <div className="flex space-x-6 text-sm border-b border-gray-700">
-        {['Query', 'Headers', 'Auth', 'Body', 'Tests', 'Pre Run'].map((tab) => (
+        {['Query', 'Headers', 'Auth', 'Body', 'Tests'].map((tab) => (
           <button
             key={tab}
             onClick={() => setActiveTab(tab)}
@@ -340,7 +340,7 @@ const RequestEditor = ({ onResponse }) => {
           />
 
           <div className="text-xs text-gray-400 mt-1">
-            Scripts run after response is received. Use pseudo-Postman syntax.
+            Scripts run after response is received. Use pseudo-PostWomen syntax.
           </div>
         </div>
       )}

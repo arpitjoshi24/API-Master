@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 
-const tabs = ['Response', 'Headers', 'Cookies', 'Results', 'Docs'];
+const tabs = ['Response', 'Headers', 'Cookies', 'Results'];
 
 export default function OutputEditor({
   response = {},
@@ -10,10 +10,12 @@ export default function OutputEditor({
   testResults = [],
   cookies = ''
 }) {
+  const [outputEditorKey, setOutputEditorKey] = useState(0);
   const [activeTab, setActiveTab] = useState('Response');
   const [formattedSize, setFormattedSize] = useState('0.00');
   const [maxLength, setMaxLength] = useState(500); // Default truncation length
 
+  
   useEffect(() => {
     const size = response && typeof response === 'object' ? JSON.stringify(response)?.length : 0;
     setFormattedSize((size / 1024).toFixed(2));
@@ -78,10 +80,6 @@ export default function OutputEditor({
         ) : (
           <p className="text-gray-400">No test results.</p>
         );
-
-      case 'Docs':
-        return <p className="text-gray-400">Documentation preview coming soon...</p>;
-
       default:
         return null;
     }

@@ -1,18 +1,19 @@
+require("dotenv").config();  // To use environment variables
 const express = require("express");
 const bodyParser = require("body-parser");
 const cors = require("cors");
 const jwt = require("jsonwebtoken");
 
 const app = express();
-const port = 5000;
-const SECRET_KEY = "your-secret-key"; // Use dotenv in production
+const port = process.env.PORT || 5000; // Use environment variable for port
+const SECRET_KEY = process.env.SECRET_KEY; // Use environment variable for secret key
 
+// Middleware
 app.use(cors({
-  origin: "http://localhost:5173",
+  origin: process.env.FRONTEND_URL || "http://localhost:5173",  // Frontend URL from .env
   methods: ["GET", "POST", "PUT", "DELETE"],
-  credentials: true
+  credentials: true,
 }));
-
 app.use(bodyParser.json());
 
 // Dummy user credentials (simulate a login system)
@@ -35,23 +36,6 @@ function authenticateToken(req, res, next) {
   });
 }
 
-// 🔐 Login Route — returns JWT on valid credentials
-app.post("/api/login", (req, res) => {
-  const { username, password } = req.body;
-
-  if (username === dummyUser.username && password === dummyUser.password) {
-    const token = jwt.sign({ username }, SECRET_KEY, { expiresIn: "1h" });
-    res.json({ token });
-  } else {
-    res.status(401).json({ message: "Invalid username or password" });
-  }
-});
-
-// ✅ Sample endpoint — public access
-app.get("/api/data/public", (req, res) => {
-  res.json({ message: "This is public data", time: new Date() });
-});
-
 // 🔐 Protected /api/data route with all methods
 app.route("/api/data")
   .get(authenticateToken, (req, res) => {
@@ -67,18 +51,7 @@ app.route("/api/data")
     res.json({ message: "DELETE (protected)", user: req.user });
   });
 
-app.listen(port, () => {
-  console.log(`Server is running at http://localhost:${port}`);
-});
-
-
-// test.js
-// server.js
-
-
-app.use(cors());
-app.use(express.json());
-
+// Test endpoint for general testing
 app.post("/api/test-endpoint", (req, res) => {
   const { test } = req.body;
 
@@ -89,16 +62,8 @@ app.post("/api/test-endpoint", (req, res) => {
   }
 });
 
-const PORT = 5000;
-app.listen(PORT, () => {
-  console.log(`🚀 Server running at http://localhost:${PORT}`);
-});
-
-//header tab 
-
-app.use(express.json());
-
-app.all('/api/data', (req, res) => {
+// Logging incoming request headers for debugging
+app.all("/api/data", (req, res) => {
   console.log("Received Headers:", req.headers);
 
   const response = {
@@ -106,14 +71,13 @@ app.all('/api/data', (req, res) => {
     headersReceived: req.headers,
     method: req.method,
     body: req.body,
-    timestamp: new Date().toISOString()
+    timestamp: new Date().toISOString(),
   };
 
   res.json(response);
 });
 
-app.listen(PORT, () => {
-  console.log(`Server listening at http://localhost:${PORT}`);
+// Start the server
+app.listen(port, () => {
+  console.log(`Server is running at http://localhost:${port}`);
 });
-
-
