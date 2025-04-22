@@ -1,11 +1,12 @@
 import React, { useState } from 'react';
 
 const RequestEditor = ({ onResponse }) => {
-  const [method, setMethod] = useState("GET");
-  const [url, setUrl] = useState("http://localhost:5000/api/data");
-  const [activeTab, setActiveTab] = useState("Query");
+  const [method, setMethod] = useState('GET');
+  const [url, setUrl] = useState('http://localhost:5000/api/data');
+  const [activeTab, setActiveTab] = useState('Query');
   const [queryParams, setQueryParams] = useState([{ key: '', value: '', enabled: true }]);
   const [bodyContent, setBodyContent] = useState('{}');
+  const [testScript, setTestScript] = useState('');
 
   const handleQueryChange = (index, field, value) => {
     const updated = [...queryParams];
@@ -33,10 +34,10 @@ const RequestEditor = ({ onResponse }) => {
 
       const options = {
         method,
-        headers: { "Content-Type": "application/json" },
+        headers: { 'Content-Type': 'application/json' },
       };
 
-      if (method !== "GET" && method !== "DELETE") {
+      if (method !== 'GET' && method !== 'DELETE') {
         options.body = bodyContent;
       }
 
@@ -49,18 +50,53 @@ const RequestEditor = ({ onResponse }) => {
         allHeaders[key] = value;
       });
 
+      // Store test results
+      const testResults = [];
+      const pm = {
+        test: (description, fn) => {
+          try {
+            fn();
+            testResults.push({ description, passed: true });
+          } catch (e) {
+            testResults.push({ description, passed: false, error: e.message });
+          }
+        },
+        response: {
+          to: {
+            have: {
+              status: (expected) => {
+                if (res.status !== expected) {
+                  throw new Error(`Expected ${expected}, got ${res.status}`);
+                }
+              },
+            },
+          },
+        },
+      };
+
+      // Evaluate test script from the Tests Tab
+      try {
+        const fn = new Function('pm', testScript);
+        fn(pm);
+      } catch (e) {
+        testResults.push({ description: 'Script error', passed: false, error: e.message });
+      }
+
+      // Send results to OutputEditor
       onResponse?.({
         body: data,
         headers: allHeaders,
         status: { code: res.status, text: res.statusText },
         time: timeTaken,
+        testResults,
       });
     } catch (err) {
       onResponse?.({
         body: { error: err.message },
         headers: {},
-        status: { code: 0, text: "Network Error" },
+        status: { code: 0, text: 'Network Error' },
         time: 0,
+        testResults: [],
       });
     }
   };
@@ -96,14 +132,14 @@ const RequestEditor = ({ onResponse }) => {
 
       {/* Tabs */}
       <div className="flex space-x-6 text-sm border-b border-gray-700">
-        {["Query", "Headers", "Auth", "Body", "Tests", "Pre Run"].map((tab) => (
+        {['Query', 'Headers', 'Auth', 'Body', 'Tests', 'Pre Run'].map((tab) => (
           <button
             key={tab}
             onClick={() => setActiveTab(tab)}
             className={`pb-2 ${
               activeTab === tab
-                ? "text-white border-b-2 border-blue-500"
-                : "text-gray-400 hover:text-white"
+                ? 'text-white border-b-2 border-blue-500'
+                : 'text-gray-400 hover:text-white'
             }`}
           >
             {tab}
@@ -112,7 +148,7 @@ const RequestEditor = ({ onResponse }) => {
       </div>
 
       {/* Query Tab */}
-      {activeTab === "Query" && (
+      {activeTab === 'Query' && (
         <div className="px-2 py-4 space-y-2">
           {queryParams.map((param, index) => (
             <div key={index} className="grid grid-cols-12 gap-2 items-center">
@@ -120,7 +156,7 @@ const RequestEditor = ({ onResponse }) => {
                 <input
                   type="checkbox"
                   checked={param.enabled}
-                  onChange={(e) => handleQueryChange(index, "enabled", e.target.checked)}
+                  onChange={(e) => handleQueryChange(index, 'enabled', e.target.checked)}
                   className="accent-blue-500"
                 />
               </div>
@@ -128,7 +164,7 @@ const RequestEditor = ({ onResponse }) => {
                 <input
                   type="text"
                   value={param.key}
-                  onChange={(e) => handleQueryChange(index, "key", e.target.value)}
+                  onChange={(e) => handleQueryChange(index, 'key', e.target.value)}
                   placeholder="parameter"
                   className="w-full bg-gray-800 px-2 py-1 rounded"
                 />
@@ -137,7 +173,7 @@ const RequestEditor = ({ onResponse }) => {
                 <input
                   type="text"
                   value={param.value}
-                  onChange={(e) => handleQueryChange(index, "value", e.target.value)}
+                  onChange={(e) => handleQueryChange(index, 'value', e.target.value)}
                   placeholder="value"
                   className="w-full bg-gray-800 px-2 py-1 rounded"
                 />
@@ -154,7 +190,7 @@ const RequestEditor = ({ onResponse }) => {
       )}
 
       {/* Body Tab */}
-      {activeTab === "Body" && (
+      {activeTab === 'Body' && (
         <div className="px-2 py-4">
           <textarea
             rows={8}
@@ -163,6 +199,23 @@ const RequestEditor = ({ onResponse }) => {
             className="w-full bg-gray-800 p-2 rounded text-sm font-mono"
             placeholder='{"key":"value"}'
           />
+        </div>
+      )}
+
+      {/* Tests Tab */}
+      {activeTab === 'Tests' && (
+        <div className="px-2 py-4 space-y-2">
+          <label className="block text-sm text-gray-300 mb-1">Write your test scripts here:</label>
+          <textarea
+            value={testScript}
+            onChange={(e) => setTestScript(e.target.value)}
+            placeholder={`e.g. pm.test("Status code is 200", function () {\n  pm.response.to.have.status(200);\n});`}
+            className="w-full min-h-[200px] bg-gray-800 text-white p-2 rounded resize-none"
+          />
+
+          <div className="text-xs text-gray-400 mt-1">
+            Scripts run after response is received. Use pseudo-Postman syntax.
+          </div>
         </div>
       )}
     </div>
