@@ -37,7 +37,7 @@ export default function Sidebar({ onNewRequest }) {
   };
 
   return (
-    <div className="w-full bg-gray-900 text-white h-full  flex flex-col">
+    <div className="w-full bg-gray-900 text-white h-full  flex flex-col overflow-auto">
       {/* Header */}
       <div className="flex items-center justify-between px-4 py-3 border-b border-gray-700">
         <span className="text-sm font-semibold tracking-wide">API-Master</span>

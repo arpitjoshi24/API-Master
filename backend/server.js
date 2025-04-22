@@ -16,12 +16,6 @@ app.use(cors({
 }));
 app.use(bodyParser.json());
 
-// Dummy user credentials (simulate a login system)
-const dummyUser = {
-  username: "pawan",
-  password: "1234"
-};
-
 // 🛡️ JWT Authentication Middleware
 function authenticateToken(req, res, next) {
   const authHeader = req.headers["authorization"];
