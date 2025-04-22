@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 
-const tabs = ['Response', 'Headers', 'Cookies', 'Results', 'Docs'];
+const tabs = ['Response', 'Headers', 'Cookies', 'Results'];
 
 export default function OutputEditor({
   response = {},
@@ -53,7 +53,7 @@ export default function OutputEditor({
           </pre>
         );
 
-      case 'Cookies':
+      case 'Cookies': {
         const parsedCookies = parseCookies(cookies);
         return (
           <pre className="text-blue-300 whitespace-pre-wrap">
@@ -62,6 +62,7 @@ export default function OutputEditor({
               : 'No cookies available.'}
           </pre>
         );
+      }
 
       case 'Results':
         return Array.isArray(testResults) && testResults.length > 0 ? (
@@ -78,9 +79,6 @@ export default function OutputEditor({
         ) : (
           <p className="text-gray-400">No test results.</p>
         );
-
-      case 'Docs':
-        return <p className="text-gray-400">Documentation preview coming soon...</p>;
 
       default:
         return null;

@@ -77,7 +77,7 @@ const RequestEditor = ({ onResponse }) => {
         allHeaders[key] = value;
       });
 
-      runTests(data);
+      runTests(data, finalUrl, res);
 
       // Store test results
       const testResults = [];
@@ -130,7 +130,7 @@ const RequestEditor = ({ onResponse }) => {
     }
   };
 
-  const runTests = (response) => {
+  const runTests = (response, finalUrl, res) => {
     const tests = [];
     try {
       const sandbox = { response, tests };
@@ -179,7 +179,7 @@ const RequestEditor = ({ onResponse }) => {
       </div>
 
       <div className="flex space-x-6 text-sm border-b border-gray-700">
-        {['Query', 'Headers', 'Auth', 'Body', 'Tests', 'Pre Run'].map((tab) => (
+        {['Query', 'Headers', 'Auth', 'Body', 'Tests'].map((tab) => (
           <button
             key={tab}
             onClick={() => setActiveTab(tab)}

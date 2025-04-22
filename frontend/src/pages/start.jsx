@@ -30,7 +30,7 @@ export default function StartPage() {
   return (
     <div className="flex flex-row h-screen w-screen bg-gray-900 text-white">
       {/* Sidebar */}
-      <div className="w-[300px] bg-gray-800 p-4">
+      <div className="w-[300px] bg-gray-800">
         <Sidebar />
       </div>
 
@@ -43,7 +43,7 @@ export default function StartPage() {
       </div>
 
       {/* Output */}
-      <div className="flex-1 overflow-auto p-4">
+      <div className="flex-1 overflow-auto">
         {loading ? (
           <div className="flex justify-center items-center h-full text-lg text-gray-300">
             Loading...
