@@ -43,6 +43,12 @@ const RequestEditor = ({ onResponse }) => {
     setBodyContent(e.target.value);
   };
 
+  const saveRequestToLocalStorage = (requestInfo) => {
+    const existingRequests = JSON.parse(localStorage.getItem('previousRequests')) || [];
+    const updatedRequests = [requestInfo, ...existingRequests.slice(0, 49)]; // keep only latest 50
+    localStorage.setItem('previousRequests', JSON.stringify(updatedRequests));
+  };
+
   const handleSendRequest = async () => {
     try {
       const start = performance.now();
@@ -99,6 +105,13 @@ const RequestEditor = ({ onResponse }) => {
       const testFunction = new Function("response", "tests", testScript);
       testFunction(sandbox.response, sandbox.tests);
       setTestResults(tests.length > 0 ? tests : ["⚠️ No tests were executed."]);
+
+      saveRequestToLocalStorage({
+        title: `${method} ${finalUrl}`,
+        description: `Status: ${res.status} ${res.statusText}`,
+        timestamp: new Date().toISOString()
+      });
+
     } catch (err) {
       setTestResults([`❌ Error while running tests: ${err.message}`]);
     }
@@ -133,7 +146,6 @@ const RequestEditor = ({ onResponse }) => {
         </button>
       </div>
 
-      {/* Tabs */}
       <div className="flex space-x-6 text-sm border-b border-gray-700">
         {["Query", "Headers", "Auth", "Body", "Tests", "Pre Run"].map((tab) => (
           <button
