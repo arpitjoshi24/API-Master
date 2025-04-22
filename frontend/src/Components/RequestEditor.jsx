@@ -30,6 +30,12 @@ const RequestEditor = () => {
     return `${url}?${searchParams.toString()}`;
   };
 
+  const saveRequestToLocalStorage = (requestInfo) => {
+    const existingRequests = JSON.parse(localStorage.getItem('previousRequests')) || [];
+    const updatedRequests = [requestInfo, ...existingRequests.slice(0, 49)]; // keep only latest 50
+    localStorage.setItem('previousRequests', JSON.stringify(updatedRequests));
+  };
+
   const handleSendRequest = async () => {
     try {
       const finalUrl = buildUrlWithQuery();
@@ -47,14 +53,26 @@ const RequestEditor = () => {
       const res = await fetch(finalUrl, options);
       const data = await res.json();
       setResponse(data);
+
+      saveRequestToLocalStorage({
+        title: `${method} ${finalUrl}`,
+        description: `Status: ${res.status} ${res.statusText}`,
+        timestamp: new Date().toISOString()
+      });
+
     } catch (err) {
       setResponse({ error: err.message });
+
+      saveRequestToLocalStorage({
+        title: `${method} ${url}`,
+        description: `Failed: ${err.message}`,
+        timestamp: new Date().toISOString()
+      });
     }
   };
 
   return (
     <div className="flex flex-col bg-gray-900 text-white w-full h-full p-4 space-y-4">
-      {/* Request Bar */}
       <div className="flex space-x-2 items-center">
         <select
           value={method}
@@ -81,7 +99,6 @@ const RequestEditor = () => {
         </button>
       </div>
 
-      {/* Tabs */}
       <div className="flex space-x-6 text-sm border-b border-gray-700">
         {["Query", "Headers", "Auth", "Body", "Tests", "Pre Run"].map((tab) => (
           <button
@@ -99,7 +116,6 @@ const RequestEditor = () => {
         ))}
       </div>
 
-      {/* Query Parameters */}
       {activeTab === "Query" && (
         <div className="px-2 py-4 space-y-2">
           <h2 className="text-sm mb-2">Query Parameters</h2>
@@ -142,7 +158,6 @@ const RequestEditor = () => {
         </div>
       )}
 
-      {/* Body Input */}
       {activeTab === "Body" && (
         <div className="px-2 py-4">
           <h2 className="text-sm mb-2">Raw JSON Body</h2>
@@ -156,7 +171,6 @@ const RequestEditor = () => {
         </div>
       )}
 
-      {/* Response Output */}
       {response && (
         <div className="bg-gray-800 p-4 rounded text-sm overflow-auto">
           <h3 className="text-white mb-2">Response</h3>
