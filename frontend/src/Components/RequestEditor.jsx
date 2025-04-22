@@ -5,7 +5,11 @@ const RequestEditor = ({ onResponse }) => {
   const [url, setUrl] = useState("http://localhost:5000/api/data");
   const [activeTab, setActiveTab] = useState("Query");
   const [queryParams, setQueryParams] = useState([{ key: '', value: '', enabled: true }]);
-  const [bodyContent, setBodyContent] = useState('{}');
+  const [bodyType, setBodyType] = useState("none"); // Body type selection (none, json, form)
+  const [bodyContent, setBodyContent] = useState('{}'); // Body content (JSON, form data, etc.)
+  const [headers, setHeaders] = useState([{ key: '', value: '', enabled: true }]);
+  const [testScript, setTestScript] = useState(`// Example:\n// tests.push(response.status === "success" ? "✅ Passed" : "❌ Failed");`);
+  const [testResults, setTestResults] = useState(null);
 
   const handleQueryChange = (index, field, value) => {
     const updated = [...queryParams];
@@ -26,18 +30,39 @@ const RequestEditor = ({ onResponse }) => {
     return enabled.length ? `${url}?${searchParams.toString()}` : url;
   };
 
+  const handleBodyTypeChange = (e) => {
+    setBodyType(e.target.value);
+    if (e.target.value === 'none') {
+      setBodyContent('');
+    } else if (e.target.value === 'json') {
+      setBodyContent('{}');
+    }
+  };
+
+  const handleBodyContentChange = (e) => {
+    setBodyContent(e.target.value);
+  };
+
   const handleSendRequest = async () => {
     try {
       const start = performance.now();
       const finalUrl = buildUrlWithQuery();
 
+      // Include headers dynamically
+      const requestHeaders = Object.fromEntries(
+        headers.filter(h => h.enabled && h.key.trim()).map(h => [h.key, h.value])
+      );
+
       const options = {
         method,
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": bodyType === "json" ? "application/json" : "application/x-www-form-urlencoded",
+          ...requestHeaders,
+        },
       };
 
-      if (method !== "GET" && method !== "DELETE") {
-        options.body = bodyContent;
+      if (method !== "GET" && method !== "DELETE" && bodyType !== "none") {
+        options.body = bodyType === "json" ? bodyContent : new URLSearchParams(bodyContent);
       }
 
       const res = await fetch(finalUrl, options);
@@ -48,6 +73,8 @@ const RequestEditor = ({ onResponse }) => {
       res.headers.forEach((value, key) => {
         allHeaders[key] = value;
       });
+
+      runTests(data);
 
       onResponse?.({
         body: data,
@@ -62,6 +89,18 @@ const RequestEditor = ({ onResponse }) => {
         status: { code: 0, text: "Network Error" },
         time: 0,
       });
+    }
+  };
+
+  const runTests = (response) => {
+    const tests = [];
+    try {
+      const sandbox = { response, tests };
+      const testFunction = new Function("response", "tests", testScript);
+      testFunction(sandbox.response, sandbox.tests);
+      setTestResults(tests.length > 0 ? tests : ["⚠️ No tests were executed."]);
+    } catch (err) {
+      setTestResults([`❌ Error while running tests: ${err.message}`]);
     }
   };
 
@@ -100,11 +139,7 @@ const RequestEditor = ({ onResponse }) => {
           <button
             key={tab}
             onClick={() => setActiveTab(tab)}
-            className={`pb-2 ${
-              activeTab === tab
-                ? "text-white border-b-2 border-blue-500"
-                : "text-gray-400 hover:text-white"
-            }`}
+            className={`pb-2 ${activeTab === tab ? "text-white border-b-2 border-blue-500" : "text-gray-400 hover:text-white"}`}
           >
             {tab}
           </button>
@@ -153,16 +188,95 @@ const RequestEditor = ({ onResponse }) => {
         </div>
       )}
 
+      {/* Headers Tab */}
+      {activeTab === "Headers" && (
+        <div className="px-2 py-4 space-y-2">
+          {headers.map((header, index) => (
+            <div key={index} className="grid grid-cols-12 gap-2 items-center">
+              <div className="col-span-1">
+                <input
+                  type="checkbox"
+                  checked={header.enabled}
+                  onChange={(e) => {
+                    const updated = [...headers];
+                    updated[index].enabled = e.target.checked;
+                    setHeaders(updated);
+                  }}
+                  className="accent-blue-500"
+                />
+              </div>
+              <div className="col-span-5">
+                <input
+                  type="text"
+                  value={header.key}
+                  onChange={(e) => {
+                    const updated = [...headers];
+                    updated[index].key = e.target.value;
+                    setHeaders(updated);
+                  }}
+                  placeholder="Header Name"
+                  className="w-full bg-gray-800 px-2 py-1 rounded"
+                />
+              </div>
+              <div className="col-span-6">
+                <input
+                  type="text"
+                  value={header.value}
+                  onChange={(e) => {
+                    const updated = [...headers];
+                    updated[index].value = e.target.value;
+                    setHeaders(updated);
+                  }}
+                  placeholder="Header Value"
+                  className="w-full bg-gray-800 px-2 py-1 rounded"
+                />
+              </div>
+            </div>
+          ))}
+          <button
+            onClick={() => setHeaders([...headers, { key: '', value: '', enabled: true }])}
+            className="mt-2 text-sm text-blue-400 hover:underline"
+          >
+            + Add Header
+          </button>
+        </div>
+      )}
+
       {/* Body Tab */}
       {activeTab === "Body" && (
-        <div className="px-2 py-4">
-          <textarea
-            rows={8}
-            value={bodyContent}
-            onChange={(e) => setBodyContent(e.target.value)}
-            className="w-full bg-gray-800 p-2 rounded text-sm font-mono"
-            placeholder='{"key":"value"}'
-          />
+        <div className="px-2 py-4 space-y-2">
+          <div className="flex items-center">
+            <select
+              value={bodyType}
+              onChange={handleBodyTypeChange}
+              className="bg-gray-800 text-sm px-2 py-1 rounded"
+            >
+              <option value="none">None</option>
+              <option value="json">JSON</option>
+              <option value="form">Form Data</option>
+            </select>
+          </div>
+          {bodyType === "json" && (
+            <textarea
+              value={bodyContent}
+              onChange={handleBodyContentChange}
+              placeholder="Enter JSON content"
+              rows="6"
+              className="w-full bg-gray-800 px-2 py-1 rounded"
+            />
+          )}
+          {bodyType === "form" && (
+            <div className="space-y-2">
+              {/* Form Data inputs can be added here */}
+              <input
+                type="text"
+                value={bodyContent}
+                onChange={handleBodyContentChange}
+                placeholder="Form Data"
+                className="w-full bg-gray-800 px-2 py-1 rounded"
+              />
+            </div>
+          )}
         </div>
       )}
     </div>
