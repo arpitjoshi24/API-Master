@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 
 const RequestEditor = ({ onResponse }) => {
   const [method, setMethod] = useState('GET');
-  const [url, setUrl] = useState('http://localhost:5000/api/data');
+  const [url, setUrl] = useState('');
   const [activeTab, setActiveTab] = useState('Query');
   const [queryParams, setQueryParams] = useState([{ key: '', value: '', enabled: true }]);
   const [bodyType, setBodyType] = useState("none"); // Body type selection (none, json, form)
@@ -41,6 +41,25 @@ const RequestEditor = ({ onResponse }) => {
 
   const handleBodyContentChange = (e) => {
     setBodyContent(e.target.value);
+  };
+
+  // Function to handle JSON file import
+  const handleFileImport = (e) => {
+    const file = e.target.files[0];
+    if (file && file.type === "application/json") {
+      const reader = new FileReader();
+      reader.onload = () => {
+        try {
+          const jsonContent = JSON.parse(reader.result);
+          setBodyContent(JSON.stringify(jsonContent, null, 2)); // Format with indentation
+        } catch (error) {
+          alert('Error reading JSON file: ' + error.message);
+        }
+      };
+      reader.readAsText(file);
+    } else {
+      alert('Please select a valid JSON file');
+    }
   };
 
   const saveRequestToLocalStorage = (requestInfo) => {
@@ -183,112 +202,12 @@ const RequestEditor = ({ onResponse }) => {
           <button
             key={tab}
             onClick={() => setActiveTab(tab)}
-            className={`pb-2 ${
-              activeTab === tab
-                ? 'text-white border-b-2 border-blue-500'
-                : 'text-gray-400 hover:text-white'
-            }`}
+            className={`pb-2 ${activeTab === tab ? 'text-white border-b-2 border-blue-500' : 'text-gray-400 hover:text-white'}`}
           >
             {tab}
           </button>
         ))}
       </div>
-
-      {/* Query Tab */}
-      {activeTab === 'Query' && (
-        <div className="px-2 py-4 space-y-2">
-          {queryParams.map((param, index) => (
-            <div key={index} className="grid grid-cols-12 gap-2 items-center">
-              <div className="col-span-1">
-                <input
-                  type="checkbox"
-                  checked={param.enabled}
-                  onChange={(e) => handleQueryChange(index, 'enabled', e.target.checked)}
-                  className="accent-blue-500"
-                />
-              </div>
-              <div className="col-span-5">
-                <input
-                  type="text"
-                  value={param.key}
-                  onChange={(e) => handleQueryChange(index, 'key', e.target.value)}
-                  placeholder="parameter"
-                  className="w-full bg-gray-800 px-2 py-1 rounded"
-                />
-              </div>
-              <div className="col-span-6">
-                <input
-                  type="text"
-                  value={param.value}
-                  onChange={(e) => handleQueryChange(index, 'value', e.target.value)}
-                  placeholder="value"
-                  className="w-full bg-gray-800 px-2 py-1 rounded"
-                />
-              </div>
-            </div>
-          ))}
-          <button
-            onClick={handleAddQueryParam}
-            className="mt-2 text-sm text-blue-400 hover:underline"
-          >
-            + Add Parameter
-          </button>
-        </div>
-      )}
-
-      {/* Headers Tab */}
-      {activeTab === "Headers" && (
-        <div className="px-2 py-4 space-y-2">
-          {headers.map((header, index) => (
-            <div key={index} className="grid grid-cols-12 gap-2 items-center">
-              <div className="col-span-1">
-                <input
-                  type="checkbox"
-                  checked={header.enabled}
-                  onChange={(e) => {
-                    const updated = [...headers];
-                    updated[index].enabled = e.target.checked;
-                    setHeaders(updated);
-                  }}
-                  className="accent-blue-500"
-                />
-              </div>
-              <div className="col-span-5">
-                <input
-                  type="text"
-                  value={header.key}
-                  onChange={(e) => {
-                    const updated = [...headers];
-                    updated[index].key = e.target.value;
-                    setHeaders(updated);
-                  }}
-                  placeholder="Header Name"
-                  className="w-full bg-gray-800 px-2 py-1 rounded"
-                />
-              </div>
-              <div className="col-span-6">
-                <input
-                  type="text"
-                  value={header.value}
-                  onChange={(e) => {
-                    const updated = [...headers];
-                    updated[index].value = e.target.value;
-                    setHeaders(updated);
-                  }}
-                  placeholder="Header Value"
-                  className="w-full bg-gray-800 px-2 py-1 rounded"
-                />
-              </div>
-            </div>
-          ))}
-          <button
-            onClick={() => setHeaders([...headers, { key: '', value: '', enabled: true }])}
-            className="mt-2 text-sm text-blue-400 hover:underline"
-          >
-            + Add Header
-          </button>
-        </div>
-      )}
 
       {/* Body Tab */}
       {activeTab === "Body" && (
@@ -305,17 +224,27 @@ const RequestEditor = ({ onResponse }) => {
             </select>
           </div>
           {bodyType === "json" && (
-            <textarea
-              value={bodyContent}
-              onChange={handleBodyContentChange}
-              placeholder="Enter JSON content"
-              rows="6"
-              className="w-full bg-gray-800 px-2 py-1 rounded"
-            />
+            <>
+              <textarea
+                value={bodyContent}
+                onChange={handleBodyContentChange}
+                placeholder="Enter JSON content"
+                rows="6"
+                className="w-full bg-gray-800 px-2 py-1 rounded"
+              />
+              <div className="mt-2">
+                <input
+                  type="file"
+                  accept=".json"
+                  onChange={handleFileImport}
+                  className="bg-blue-600 hover:bg-blue-700 text-sm text-white px-4 py-2 rounded"
+                />
+                <span className="ml-2 text-sm text-gray-400">Import JSON file</span>
+              </div>
+            </>
           )}
           {bodyType === "form" && (
             <div className="space-y-2">
-              {/* Form Data inputs can be added here */}
               <input
                 type="text"
                 value={bodyContent}
@@ -325,23 +254,6 @@ const RequestEditor = ({ onResponse }) => {
               />
             </div>
           )}
-        </div>
-      )}
-
-      {/* Tests Tab */}
-      {activeTab === 'Tests' && (
-        <div className="px-2 py-4 space-y-2">
-          <label className="block text-sm text-gray-300 mb-1">Write your test scripts here:</label>
-          <textarea
-            value={testScript}
-            onChange={(e) => setTestScript(e.target.value)}
-            placeholder={`e.g. pm.test("Status code is 200", function () {\n  pm.response.to.have.status(200);\n});`}
-            className="w-full min-h-[200px] bg-gray-800 text-white p-2 rounded resize-none"
-          />
-
-          <div className="text-xs text-gray-400 mt-1">
-            Scripts run after response is received. Use pseudo-Postman syntax.
-          </div>
         </div>
       )}
     </div>

@@ -85,13 +85,24 @@ export default function OutputEditor({
     }
   };
 
+  // Function to get the status color based on the status code
+  const getStatusColor = (statusCode) => {
+    if (statusCode >= 200 && statusCode < 300) return 'text-green-400'; // Success
+    if (statusCode >= 300 && statusCode < 400) return 'text-yellow-400'; // Redirection
+    if (statusCode >= 400 && statusCode < 500) return 'text-red-400'; // Client error
+    if (statusCode >= 500 && statusCode < 600) return 'text-red-600'; // Server error
+    return 'text-gray-400'; // Default color
+  };
+
   return (
     <div className="flex flex-col h-full bg-gray-900 text-white p-4">
       {/* Status Bar */}
       <div className="flex space-x-6 mb-4 text-sm">
         <div>
           <span className="font-semibold">Status:</span>{' '}
-          {status?.code ? `${status.code} ${status?.text || ''}` : '—'}
+          <span className={getStatusColor(status?.code)}>
+            {status?.code ? `${status.code} ${status?.text || ''}` : '—'}
+          </span>
         </div>
         <div>
           <span className="font-semibold">Size:</span> {formattedSize} KB
