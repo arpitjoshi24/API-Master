@@ -154,7 +154,7 @@ const RequestEditor = () => {
             className="mt-2 text-sm text-blue-400 hover:underline"
           >
             + Add Parameter
-          </button>
+          </button> 
         </div>
       )}
 
