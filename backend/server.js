@@ -5,8 +5,8 @@ const cors = require("cors");
 const jwt = require("jsonwebtoken");
 
 const app = express();
-const port = process.env.PORT || 5000; // Use environment variable for port
-const SECRET_KEY = process.env.SECRET_KEY; // Use environment variable for secret key
+const port = process.env.PORT || 5000;
+const SECRET_KEY = process.env.SECRET_KEY;
 
 // Middleware
 app.use(cors({
@@ -16,7 +16,7 @@ app.use(cors({
 }));
 app.use(bodyParser.json());
 
-// 🛡️ JWT Authentication Middleware
+
 function authenticateToken(req, res, next) {
   const authHeader = req.headers["authorization"];
   const token = authHeader && authHeader.split(" ")[1]; // Bearer <token>

@@ -1,25 +1,25 @@
-# 🧪 PostmanClone – Offline API Testing Tool
+#  API-Master – Offline API Testing Tool
 
-## 📚 Overview
+##  Overview
 
-Welcome to the **Postman Clone** project! This repository documents the development of a lightweight, offline-friendly API testing tool built using **React** and **Express**. It allows users to test RESTful APIs, manage requests, and view responses — all in a smooth, intuitive interface.
+Welcome to the "API-Master" project! This repository documents the development of a lightweight, offline-friendly API testing tool built using "React" and "Express". It allows users to test RESTful APIs, manage requests, and view responses — all in a smooth, intuitive interface.
 
 Our goal is to create a simplified version of Postman that can work offline and be extended with advanced features like automated test assertions, token-based authentication, and customizable request options.
 
 ---
 
-## 🔍 Project Goals
+##  Project Goals
 
-- **Request Builder**: Allow users to make various HTTP requests (GET, POST, PUT, DELETE).
-- **Header & Body Support**: Include customizable headers and JSON payloads.
-- **Auth Handling**: Add bearer tokens or custom headers for secure endpoints.
-- **Test Tab**: Evaluate response data against expected results.
-- **Offline Friendly**: Optionally run as a desktop app using Electron.
-- **Frontend-Backend Isolation**: React for UI, Express for backend simulations.
+- "Request Builder": Allow users to make various HTTP requests (GET, POST, PUT, DELETE).
+- "Header & Body Support": Include customizable headers and JSON payloads.
+- "Auth Handling": Add bearer tokens or custom headers for secure endpoints.
+- "Test Tab": Evaluate response data against expected results.
+- "Offline Friendly": Optionally run as a desktop app using Electron.
+- "Frontend-Backend Isolation": React for UI, Express for backend simulations.
 
 ---
 
-## 🧠 Core Modules
+##  Core Modules
 
 ### React (Frontend)
 - Dynamic input fields for headers, parameters, and body
@@ -34,14 +34,14 @@ Our goal is to create a simplified version of Postman that can work offline and 
 
 ---
 
-## ✅ Advantages
+##  Advantages
 
-- Offline testing capability (with Electron)
+- Offline testing capability
 - No need for third-party tools
 - Minimal system requirements
 - Highly extensible and beginner-friendly
 
-## ❌ Limitations
+##  Limitations
 
 - Manual data entry for request setup
 - Requires knowledge of HTTP/JSON basics
@@ -50,7 +50,7 @@ Our goal is to create a simplified version of Postman that can work offline and 
 
 ---
 
-## 📋 Applications
+##  Applications
 
 This clone can be used for:
 
@@ -61,7 +61,7 @@ This clone can be used for:
 
 ---
 
-## 📊 Features in Action
+##  Features in Action
 
 ### Request Builder
 - Select method (GET/POST/etc)
@@ -76,11 +76,11 @@ This clone can be used for:
 
 ---
 
-## ⚙️ Fitness-Like Function (Test Tab Logic)
+##  Fitness-Like Function (Test Tab Logic)
 
-While not a genetic algorithm, the **Test Tab** includes a logic engine to simulate assertions:
+While not a genetic algorithm, the "Test Tab" includes a logic engine to simulate assertions:
 
-- **Validations**
+- "Validations"
   - Status code match
   - Presence of keys
   - Value checks (equal, contains, etc.)
@@ -89,19 +89,23 @@ Each passed test adds to the visual "score" of a request success rate. This enco
 
 ---
 
-## 🛠️ Installation & Setup
+##  Installation & Setup
 
 To run this project, clone the repository, install dependencies, and run the servers:
 
 ```bash
+
 # Clone the repository
-git clone https://github.com/yourusername/postmanclone.git
-cd postmanclone
+git clone https://github.com/arpitjoshi24/API-Master.git
+cd API-Master
+cd PostWomen
 
 # Frontend Setup
-cd client
+cd frontend
 npm install
+npm run dev
 
 # Backend Setup
-cd ../server
+cd backend
 npm install
+node server.js
