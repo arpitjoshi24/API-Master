@@ -1,111 +1,124 @@
-#  API-Master – Offline API Testing Tool
+require("dotenv").config();  // To use environment variables
+const express = require("express");
+const bodyParser = require("body-parser");
+const cors = require("cors");
+const jwt = require("jsonwebtoken");
 
-##  Overview
+const app = express();
+const port = process.env.PORT || 5000; // Use environment variable for port
+const SECRET_KEY = process.env.SECRET_KEY; // Use environment variable for secret key
 
-Welcome to the "API-Master" project! This repository documents the development of a lightweight, offline-friendly API testing tool built using "React" and "Express". It allows users to test RESTful APIs, manage requests, and view responses — all in a smooth, intuitive interface.
+// Middleware
+app.use(cors({
+  origin: process.env.FRONTEND_URL || "http://localhost:5173",  // Frontend URL from .env
+  methods: ["GET", "POST", "PUT", "DELETE"],
+  credentials: true,
+}));
+app.use(bodyParser.json());
 
-Our goal is to create a simplified version of Postman that can work offline and be extended with advanced features like automated test assertions, token-based authentication, and customizable request options.
+// Dummy user credentials (simulate a login system)
+const dummyUser = {
+  username: "pawan",
+  password: "1234"
+};
 
----
+// 🛡 JWT Authentication Middleware
+function authenticateToken(req, res, next) {
+  const authHeader = req.headers["authorization"];
+  const token = authHeader && authHeader.split(" ")[1]; // Bearer <token>
 
-##  Project Goals
+  if (!token) return res.status(401).json({ message: "No token provided" });
 
-- "Request Builder": Allow users to make various HTTP requests (GET, POST, PUT, DELETE).
-- "Header & Body Support": Include customizable headers and JSON payloads.
-- "Auth Handling": Add bearer tokens or custom headers for secure endpoints.
-- "Test Tab": Evaluate response data against expected results.
-- "Offline Friendly": Optionally run as a desktop app using Electron.
-- "Frontend-Backend Isolation": React for UI, Express for backend simulations.
+  jwt.verify(token, SECRET_KEY, (err, user) => {
+    if (err) return res.status(403).json({ message: "Invalid token" });
+    req.user = user;
+    next();
+  });
+}
 
----
+// 🔐 Protected /api/data route with all methods
+app.route("/api/data")
+  .get(authenticateToken, (req, res) => {
+    res.json({ message: "GET (protected)", user: req.user });
+  })
+  .post(authenticateToken, (req, res) => {
+    res.json({ message: "POST (protected)", user: req.user, body: req.body });
+  })
+  .put(authenticateToken, (req, res) => {
+    res.json({ message: "PUT (protected)", user: req.user, body: req.body });
+  })
+  .delete(authenticateToken, (req, res) => {
+    res.json({ message: "DELETE (protected)", user: req.user });
+  });
 
-##  Core Modules
+// Test endpoint for general testing
+app.post("/api/test-endpoint", (req, res) => {
+  const { test } = req.body;
 
-### React (Frontend)
-- Dynamic input fields for headers, parameters, and body
-- Request/Response display panels
-- Test tab with custom assertions
-- JSON formatting and pretty printing
+  if (test === "pass") {
+    return res.json({ status: "success", message: "Test data received" });
+  } else {
+    return res.json({ status: "fail", message: "Test failed" });
+  }
+});
 
-### Express (Backend)
-- Dummy API endpoints for testing
-- Middleware for logging and CORS
-- Token-based authentication example routes
+// Logging incoming request headers for debugging
+app.all("/api/data", (req, res) => {
+  console.log("Received Headers:", req.headers);
 
----
+  const response = {
+    status: "success",
+    headersReceived: req.headers,
+    method: req.method,
+    body: req.body,
+    timestamp: new Date().toISOString(),
+  };
 
-##  Advantages
+  res.json(response);
+});
 
-- Offline testing capability
-- No need for third-party tools
-- Minimal system requirements
-- Highly extensible and beginner-friendly
+// 404 - Not Found Middleware (Handle undefined routes)
+app.get('/api/test-404', (req, res, next) => {
+  const error = new Error('Not Found');
+  error.status = 404;
+  next(error);
+});
 
-##  Limitations
+// Custom route to simulate 500 error
+app.get('/api/test-500', (req, res, next) => {
+  const error = new Error('Internal Server Error');
+  error.status = 500;
+  next(error);
+});
 
-- Manual data entry for request setup
-- Requires knowledge of HTTP/JSON basics
-- Currently supports only basic assertions
-- Not a replacement for full-featured tools like Postman (yet)
+// Custom route to simulate other HTTP status codes (e.g., 401 Unauthorized)
+app.get('/api/test-401', (req, res, next) => {
+  const error = new Error('Unauthorized');
+  error.status = 401;
+  next(error);
+});
 
----
+// Custom route to simulate 403 Forbidden error
+app.get('/api/test-403', (req, res, next) => {
+  const error = new Error('Forbidden');
+  error.status = 403;
+  next(error);
+});
 
-##  Applications
+// General Error Handling Middleware
+app.use((err, req, res, next) => {
+  const statusCode = err.status || 500; // default to 500 if no status is set
+  const message = err.message || 'Something went wrong';
+  
+  res.status(statusCode).json({
+    error: {
+      message,
+      status: statusCode,
+    },
+  });
+});
 
-This clone can be used for:
-
-- API Development and Testing
-- Learning HTTP request/response cycles
-- Teaching RESTful APIs to students
-- Simulating server-client interaction offline
-
----
-
-##  Features in Action
-
-### Request Builder
-- Select method (GET/POST/etc)
-- Enter URL and headers
-- Write JSON body
-
-### Test Tab
-- Add test cases like: `Status = 200`, `response.body.success == true`
-
-### Response Panel
-- Shows status, time, size, and JSON response
-
----
-
-##  Fitness-Like Function (Test Tab Logic)
-
-While not a genetic algorithm, the "Test Tab" includes a logic engine to simulate assertions:
-
-- "Validations"
-  - Status code match
-  - Presence of keys
-  - Value checks (equal, contains, etc.)
-
-Each passed test adds to the visual "score" of a request success rate. This encourages building better APIs.
-
----
-
-##  Installation & Setup
-
-To run this project, clone the repository, install dependencies, and run the servers:
-
-```bash
-
-# Clone the repository
-git clone https://github.com/arpitjoshi24/API-Master.git
-cd API-Master
-cd PostWomen
-
-# Frontend Setup
-cd frontend
-npm install
-npm run dev
-
-# Backend Setup
-cd backend
-npm install
-node server.js
+// Start the server
+app.listen(port, () => {
+  console.log(Server is running at http://localhost:${port});
+});
