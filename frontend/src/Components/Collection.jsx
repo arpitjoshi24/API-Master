@@ -9,7 +9,7 @@ export default function Collection() {
   const [newCollectionName, setNewCollectionName] = useState('');
   const [newApiData, setNewApiData] = useState({});
 
-  // Save collections to localStorage whenever they change
+
   useEffect(() => {
     localStorage.setItem('collections', JSON.stringify(collections));
   }, [collections]);
@@ -67,7 +67,7 @@ export default function Collection() {
     <div className=" max-w-4xl mx-auto">
       <h2 className="text-2xl font-semibold mb-6 text-gray-100">Collections</h2>
 
-      {/* Add Collection */}
+      {/*Add*/}
       <div className="flex gap-3 mb-6">
         <input
           type="text"
@@ -84,7 +84,7 @@ export default function Collection() {
         </button>
       </div>
 
-      {/* List Collections */}
+      {/*List*/}
       {collections.length === 0 ? (
         <p className="text-sm text-gray-400 text-center">No collections found.</p>
       ) : (
@@ -94,18 +94,17 @@ export default function Collection() {
            key={collection.id}
            className="bg-gray-800 p-5 rounded-lg shadow-md relative"
          >
-           {/* Delete Button */}
+           {/*Delete Button*/}
            <button
              onClick={() => handleDeleteCollection(collection.id)}
              className="absolute top-3 right-3 text-red-500 hover:text-red-700 text-sm"
            >
-             &#10006; {/* Cross icon */}
+             &#10006;
            </button>
          
            <h3 className="text-lg font-semibold text-white">{collection.name}</h3>
            <p className="text-sm text-gray-400 mb-3">{collection.requests.length} request(s)</p>
          
-           {/* Add API form */}
            <div className="space-y-2 mb-4">
              <input
                type="text"
@@ -128,8 +127,7 @@ export default function Collection() {
                Add API
              </button>
            </div>
-         
-           {/* Display Requests */}
+
            {collection.requests.map((req) => (
              <div key={req.id} className="border border-gray-700 rounded p-3 mb-2">
                <p className="text-white font-medium text-sm">{req.title}</p>

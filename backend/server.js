@@ -30,7 +30,6 @@ function authenticateToken(req, res, next) {
   });
 }
 
-// 🔐 Protected /api/data route with all methods
 app.route("/api/data")
   .get(authenticateToken, (req, res) => {
     res.json({ message: "GET (protected)", user: req.user });
@@ -45,7 +44,6 @@ app.route("/api/data")
     res.json({ message: "DELETE (protected)", user: req.user });
   });
 
-// Test endpoint for general testing
 app.post("/api/test-endpoint", (req, res) => {
   const { test } = req.body;
 
@@ -56,7 +54,6 @@ app.post("/api/test-endpoint", (req, res) => {
   }
 });
 
-// Logging incoming request headers for debugging
 app.all("/api/data", (req, res) => {
   console.log("Received Headers:", req.headers);
 
@@ -71,37 +68,32 @@ app.all("/api/data", (req, res) => {
   res.json(response);
 });
 
-// 404 - Not Found Middleware (Handle undefined routes)
 app.get('/api/test-404', (req, res, next) => {
   const error = new Error('Not Found');
   error.status = 404;
   next(error);
 });
 
-// Custom route to simulate 500 error
 app.get('/api/test-500', (req, res, next) => {
   const error = new Error('Internal Server Error');
   error.status = 500;
   next(error);
 });
 
-// Custom route to simulate other HTTP status codes (e.g., 401 Unauthorized)
 app.get('/api/test-401', (req, res, next) => {
   const error = new Error('Unauthorized');
   error.status = 401;
   next(error);
 });
 
-// Custom route to simulate 403 Forbidden error
 app.get('/api/test-403', (req, res, next) => {
   const error = new Error('Forbidden');
   error.status = 403;
   next(error);
 });
 
-// General Error Handling Middleware
 app.use((err, req, res, next) => {
-  const statusCode = err.status || 500; // default to 500 if no status is set
+  const statusCode = err.status || 500; 
   const message = err.message || 'Something went wrong';
   
   res.status(statusCode).json({
@@ -112,7 +104,6 @@ app.use((err, req, res, next) => {
   });
 });
 
-// Start the server
 app.listen(port, () => {
   console.log(`Server is running at http://localhost:${port}`);
 });

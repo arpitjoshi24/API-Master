@@ -8,7 +8,6 @@ export default function Sidebar({ onNewRequest }) {
   const [previousRequests, setPreviousRequests] = useState([]);
   const [collections, setCollections] = useState([]);
 
-  // Sample data
   const sampleRequests = [
     { id: 1, title: "Request 1", description: "Description of Request 1" },
     { id: 2, title: "Request 2", description: "Description of Request 2" }

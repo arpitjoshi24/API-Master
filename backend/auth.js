@@ -11,17 +11,15 @@ const DATA_FILE = path.join(__dirname, 'products.json');
 app.use(cors({ origin: 'http://localhost:5173' }));
 app.use(express.json());
 
-// Helper: Load existing products from file
 const loadProducts = () => {
   try {
     const data = fs.readFileSync(DATA_FILE, 'utf8');
     return JSON.parse(data);
   } catch (err) {
-    return []; // Return empty array if file doesn't exist or is invalid
+    return []; 
   }
 };
 
-// Helper: Save products to file
 const saveProducts = (products) => {
   fs.writeFileSync(DATA_FILE, JSON.stringify(products, null, 2));
 };
@@ -59,8 +57,6 @@ app.put('/products/:id', (req, res) => {
   if (index === -1) {
     return res.status(404).json({ message: "Product not found" });
   }
-
-  // Update the existing product (but keep the original ID)
   products[index] = { ...products[index], ...req.body, id };
   saveProducts(products);
 

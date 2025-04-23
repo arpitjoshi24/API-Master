@@ -13,8 +13,8 @@ export default function OutputEditor({
   const [outputEditorKey, setOutputEditorKey] = useState(0);
   const [activeTab, setActiveTab] = useState('Response');
   const [formattedSize, setFormattedSize] = useState('0.00');
-  const [maxLength, setMaxLength] = useState(500); // Default truncation length
-  const [isTruncated, setIsTruncated] = useState(true); // State to toggle truncation
+  const [maxLength, setMaxLength] = useState(500);
+  const [isTruncated, setIsTruncated] = useState(true);
 
   useEffect(() => {
     const size = response && typeof response === 'object' ? JSON.stringify(response)?.length : 0;
@@ -24,7 +24,7 @@ export default function OutputEditor({
   const handleTabClick = useCallback((tab) => setActiveTab(tab), []);
 
   const toggleTruncation = () => {
-    setIsTruncated(!isTruncated); // Toggle the truncation state
+    setIsTruncated(!isTruncated);
   };
 
   const truncateResponse = (response) => {
@@ -94,11 +94,11 @@ export default function OutputEditor({
   };
 
   const getStatusColor = (statusCode) => {
-    if (statusCode >= 200 && statusCode < 300) return 'text-green-400'; // Success
-    if (statusCode >= 300 && statusCode < 400) return 'text-yellow-400'; // Redirection
-    if (statusCode >= 400 && statusCode < 500) return 'text-red-400'; // Client error
-    if (statusCode >= 500 && statusCode < 600) return 'text-red-600'; // Server error
-    return 'text-gray-400'; // Default color
+    if (statusCode >= 200 && statusCode < 300) return 'text-green-400';
+    if (statusCode >= 300 && statusCode < 400) return 'text-yellow-400';
+    if (statusCode >= 400 && statusCode < 500) return 'text-red-400';
+    if (statusCode >= 500 && statusCode < 600) return 'text-red-600';
+    return 'text-gray-400';
   };
 
   const exportToFile = () => {
@@ -122,17 +122,15 @@ export default function OutputEditor({
         break;
     }
 
-    // Create a Blob and initiate the download
     const blob = new Blob([content], { type: 'application/json' });
     const link = document.createElement('a');
     link.href = URL.createObjectURL(blob);
-    link.download = `${activeTab}.json`; // Name of the file based on the active tab
+    link.download = `${activeTab}.json`;
     link.click();
   };
 
   return (
     <div className="flex flex-col h-full bg-gray-900 text-white p-4">
-      {/* Status Bar */}
       <div className="flex space-x-6 mb-4 text-sm">
         <div>
           <span className="font-semibold">Status:</span>{' '}
@@ -148,7 +146,6 @@ export default function OutputEditor({
         </div>
       </div>
 
-      {/* Tabs */}
       <div className="flex space-x-6 border-b border-gray-700 mb-4 text-sm">
         {tabs.map((tab) => (
           <div
@@ -165,7 +162,6 @@ export default function OutputEditor({
         ))}
       </div>
 
-      {/* Toggle Button for Truncation/Formatted */}
       {activeTab === 'Response' && (
         <button
           onClick={toggleTruncation}
@@ -175,17 +171,15 @@ export default function OutputEditor({
         </button>
       )}
 
-      {/* Export Button */}
       <div className='flex justify-end my-2'>
-      <button
-        onClick={exportToFile}
-        className="mt-2 bg-green-500 text-white w-40 px-4 py-2 rounded-lg shadow-md hover:bg-green-600"
-      >
-        Export {activeTab}
-      </button>
+        <button
+          onClick={exportToFile}
+          className="mt-2 bg-green-500 text-white w-40 px-4 py-2 rounded-lg shadow-md hover:bg-green-600"
+        >
+          Export {activeTab}
+        </button>
       </div>
 
-      {/* Content */}
       <div className="flex-1 overflow-auto bg-gray-800 p-4 rounded text-sm relative">
         {renderContent()}
       </div>

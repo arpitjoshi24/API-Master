@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 
 const RequestEditor = ({ onResponse, onRequest }) => {
   const [method, setMethod] = useState('GET');
@@ -7,7 +7,7 @@ const RequestEditor = ({ onResponse, onRequest }) => {
   const [queryParams, setQueryParams] = useState([{ key: '', value: '', enabled: true }]);
   const [bodyType, setBodyType] = useState("none");
   const [bodyContent, setBodyContent] = useState('{}');
-  const [formData, setFormData] = useState([{ key: '', value: '', enabled: true }]);;
+  const [formData, setFormData] = useState([{ key: '', value: '', enabled: true }]);
   const [headers, setHeaders] = useState([{ key: '', value: '', enabled: true }]);
   const [testScript, setTestScript] = useState('// Example:\n// pm.test("Status is 200", () => pm.response.to.have.status(200));');
   const [testResults, setTestResults] = useState(null);
@@ -18,7 +18,7 @@ const RequestEditor = ({ onResponse, onRequest }) => {
     const updated = [...queryParams];
     updated[index][field] = value;
     setQueryParams(updated);
-  }
+  };
 
   const handleAddQueryParam = () => {
     setQueryParams([...queryParams, { key: '', value: '', enabled: true }]);
@@ -77,7 +77,7 @@ const RequestEditor = ({ onResponse, onRequest }) => {
 
   const handleSendRequest = async () => {
     try {
-      onRequest?.(); // Notify that request is starting
+      onRequest?.();
   
       const start = performance.now();
       const constructedUrl = buildUrlWithQuery();
@@ -107,7 +107,7 @@ const RequestEditor = ({ onResponse, onRequest }) => {
       if (method !== "GET" && method !== "DELETE" && bodyType !== "none") {
         if (bodyType === "json") {
           try {
-            JSON.parse(bodyContent); // ✅ Validate JSON before sending
+            JSON.parse(bodyContent);
           } catch {
             throw new Error("Invalid JSON in request body");
           }
@@ -122,106 +122,95 @@ const RequestEditor = ({ onResponse, onRequest }) => {
           options.headers['Content-Type'] = 'application/x-www-form-urlencoded';
           options.body = form;
         }
-        else {
-          options.body = new URLSearchParams(bodyContent);
-          options.headers['Content-Type'] = 'application/json';
-          options.body = bodyContent;
+      }
+  
+      const res = await fetch(constructedUrl, options);
+      const timeTaken = Math.round(performance.now() - start); 
+  
+      let data;
+      try {
+        data = await res.json(); 
+      } catch {
+        const text = await res.text(); 
+        try {
+          data = JSON.parse(text); 
+        } catch {
+          data = { raw: text };
         }
       }
   
-      const res = await fetch(constructedUrl, options);  // Send the request
-const timeTaken = Math.round(performance.now() - start);  // Measure request time
+      const allHeaders = {};
+      res.headers.forEach((value, key) => { allHeaders[key] = value }); 
 
-let data;
-try {
-  data = await res.json();  // Try parsing the response body as JSON
-} catch {
-  const text = await res.text();  // If it's not JSON, fallback to text
-  try {
-    data = JSON.parse(text);  // Try parsing text as JSON
-  } catch {
-    data = { raw: text };  // Fallback to storing raw text if all parsing fails
-  }
-}
-
-const allHeaders = {};
-res.headers.forEach((value, key) => { allHeaders[key] = value });  // Capture all headers
-
-// Test runner block
-const testResults = [];
-const pm = {
-  test: (description, fn) => {
-    try {
-      fn();  // Execute the test function
-      testResults.push({ description, passed: true });  // If no error, test passes
-    } catch (e) {
-      testResults.push({ description, passed: false, error: e.message });  // If error, test fails
-    }
-  },
-
-  response: {
-    to: {
-      have: {
-        status: (expected) => {
-          if (res.status !== expected) {
-            throw new Error(`Expected status ${expected}, but got ${res.status}`);
-          }
-        },
-        jsonBody: (expectedBody) => {
+      const testResults = [];
+      const pm = {
+        test: (description, fn) => {
           try {
-            const body = JSON.parse(res.body);  // Parse the response body
-            Object.keys(expectedBody).forEach((key) => {
-              if (body[key] !== expectedBody[key]) {
-                throw new Error(`Expected body['${key}'] to be '${expectedBody[key]}', got '${body[key]}'`);
-              }
-            });
+            fn(); 
+            testResults.push({ description, passed: true });
           } catch (e) {
-            throw new Error('Failed to parse response body or mismatched body structure.');
+            testResults.push({ description, passed: false, error: e.message });
           }
         },
-      },
-    },
-  },
-
-  // Assign the response (res) to the pm object for it to be accessible in the tests
-  res: res,  // Make res available globally within pm object
-};
-
-try {
-  // Running the custom test script (this is user-provided)
-  const fn = new Function('pm', testScript);  // Create a function from the provided test script
-  fn(pm);  // Execute the test script
-} catch (e) {
-  // If there's an error in the test script itself
-  testResults.push({ description: 'Script error', passed: false, error: e.message });
-}
-
-// Save request to local storage (for historical tracking)
-saveRequestToLocalStorage({
-  title: `${method} ${constructedUrl}`,
-  description: `Status: ${res.status} ${res.statusText}`,
-  timestamp: new Date().toISOString(),
-});
-
-// Return the response data and test results
-onResponse?.({
-  body: data,
-  headers: allHeaders,
-  status: { code: res.status, text: res.statusText },
-  time: timeTaken,
-  testResults,
-});
-
-} catch (err) {
-  // In case of any network or other errors
-  onResponse?.({
-    body: { error: err.message },
-    headers: {},
-    status: { code: 0, text: 'Network Error' },
-    time: 0,
-    testResults: [],
-  });
-}
+  
+        response: {
+          to: {
+            have: {
+              status: (expected) => {
+                if (res.status !== expected) {
+                  throw new Error(`Expected status ${expected}, but got ${res.status}`);
+                }
+              },
+              jsonBody: (expectedBody) => {
+                try {
+                  const body = JSON.parse(res.body);
+                  Object.keys(expectedBody).forEach((key) => {
+                    if (body[key] !== expectedBody[key]) {
+                      throw new Error(`Expected body['${key}'] to be '${expectedBody[key]}', got '${body[key]}'`);
+                    }
+                  });
+                } catch (e) {
+                  throw new Error('Failed to parse response body or mismatched body structure.');
+                }
+              },
+            },
+          },
+        },
+  
+        
+        res: res, 
+      };
+  
+      try {
+        
+        const fn = new Function('pm', testScript);  
+        fn(pm); 
+      } catch (e) {
+        testResults.push({ description: 'Script error', passed: false, error: e.message });
+      }
+  
+      saveRequestToLocalStorage({
+        title: `${method} ${constructedUrl}`,
+        description: `Status: ${res.status} ${res.statusText}`,
+        timestamp: new Date().toISOString(),
+      });
+  
+      onResponse?.({
+        body: data,
+        headers: allHeaders,
+        status: { code: res.status, text: res.statusText },
+        time: timeTaken,
+        testResults,
+      });
+    } catch (err) {
+      onResponse?.({
+        body: { error: err.message },
+        headers: {},
+        status: { code: 0, text: 'Network Error' },
+        time: 0,
+        testResults: [],
+      });
+    }
   };
       
   return (
@@ -297,225 +286,8 @@ onResponse?.({
         </div>
       )}
 
-      {/* Headers Tab */}
-      {activeTab === "Headers" && (
-        <div className="px-2 py-4 space-y-2">
-          {headers.map((header, index) => (
-            <div key={index} className="grid grid-cols-12 gap-2 items-center">
-              <div className="col-span-1">
-                <input
-                  type="checkbox"
-                  checked={header.enabled}
-                  onChange={(e) => {
-                    const updated = [...headers];
-                    updated[index].enabled = e.target.checked;
-                    setHeaders(updated);
-                  }}
-                  className="accent-blue-500"
-                />
-              </div>
-              <div className="col-span-5">
-                <input
-                  type="text"
-                  value={header.key}
-                  onChange={(e) => {
-                    const updated = [...headers];
-                    updated[index].key = e.target.value;
-                    setHeaders(updated);
-                  }}
-                  placeholder="Header Name"
-                  className="w-full bg-gray-800 px-2 py-1 rounded"
-                />
-              </div>
-              <div className="col-span-6">
-                <input
-                  type="text"
-                  value={header.value}
-                  onChange={(e) => {
-                    const updated = [...headers];
-                    updated[index].value = e.target.value;
-                    setHeaders(updated);
-                  }}
-                  placeholder="Header Value"
-                  className="w-full bg-gray-800 px-2 py-1 rounded"
-                />
-              </div>
-            </div>
-          ))}
-          <button
-            onClick={() => setHeaders([...headers, { key: '', value: '', enabled: true }])}
-            className="mt-2 text-sm text-blue-400 hover:underline"
-          >
-            + Add Header
-          </button>
-        </div>
-      )}
-
-      {/* Auth Tab */}
-      {activeTab === 'Auth' && (
-        <div className="px-2 py-4 space-y-2">
-          <label className="text-sm">Authentication Type</label>
-          <select
-            value={authType}
-            onChange={(e) => setAuthType(e.target.value)}
-            className="w-full bg-gray-800 text-sm px-2 py-1 rounded mt-2"
-          >
-            <option value="none">None</option>
-            <option value="bearer">Bearer Token</option>
-            <option value="basic">Basic Auth</option>
-          </select>
-
-          {authType === 'bearer' && (
-            <div className="mt-4">
-              <label className="text-sm">Bearer Token</label>
-              <input
-                type="text"
-                value={authData.token}
-                onChange={(e) => setAuthData({ ...authData, token: e.target.value })}
-                className="w-full bg-gray-800 text-sm px-2 py-1 rounded mt-2"
-                placeholder="Enter Bearer Token"
-              />
-            </div>
-          )}
-          {authType === 'basic' && (
-            <div className="mt-4 space-y-2">
-              <input
-                type="text"
-                value={authData.username}
-                onChange={(e) => setAuthData({ ...authData, username: e.target.value })}
-                className="w-full bg-gray-800 text-sm px-2 py-1 rounded"
-                placeholder="Enter Username"
-              />
-              <input
-                type="password"
-                value={authData.password}
-                onChange={(e) => setAuthData({ ...authData, password: e.target.value })}
-                className="w-full bg-gray-800 text-sm px-2 py-1 rounded"
-                placeholder="Enter Password"
-              />
-            </div>
-          )}
-        </div>
-      )}
-
-      {/* Body Tab */}
-      {activeTab === "Body" && (
-  <div className="px-2 py-4 space-y-2">
-    <select
-      value={bodyType}
-      onChange={handleBodyTypeChange}
-      className="bg-gray-800 text-sm px-2 py-1 rounded"
-    >
-      <option value="none">None</option>
-      <option value="json">JSON</option>
-      <option value="form">Form Data</option>
-    </select>
-
-    {bodyType === "json" && (
-      <>
-        <textarea
-          value={bodyContent}
-          onChange={handleBodyContentChange}
-          placeholder="Enter JSON content"
-          rows="6"
-          className="w-full bg-gray-800 px-2 py-1 rounded"
-        />
-        <input
-          type="file"
-          accept=".json"
-          onChange={handleFileImport}
-          className="mt-2 bg-blue-600 hover:bg-blue-700 text-sm text-white px-4 py-2 rounded"
-        />
-      </>
-    )}
-
-    {bodyType === "form" && (
-      <div className="space-y-2">
-        {formData.map((param, index) => (
-          <div key={index} className="flex space-x-2">
-            <input
-              type="checkbox"
-              checked={param.enabled}
-              onChange={(e) => handleFormDataChange(index, 'enabled', e.target.checked)}
-              className="accent-blue-500"
-            />
-            <input
-              type="text"
-              placeholder="Key"
-              value={param.key}
-              onChange={(e) => handleFormDataChange(index, 'key', e.target.value)}
-              className="flex-1 px-2 py-1 bg-gray-800 rounded"
-            />
-            <input
-              type="text"
-              placeholder="Value"
-              value={param.value}
-              onChange={(e) => handleFormDataChange(index, 'value', e.target.value)}
-              className="flex-1 px-2 py-1 bg-gray-800 rounded"
-            />
-          </div>
-        ))}
-        <button
-          onClick={handleAddFormField}
-          className="bg-green-600 hover:bg-green-700 px-3 py-1 text-sm rounded"
-        >
-          + Add Form Field
-        </button>
-      </div>
-    )}
-  </div>
-)}
-
-      {/* Tests Tab */}
-      {activeTab === 'Tests' && (
-        <div className="px-2 py-4 space-y-2">
-          <label className="block text-sm text-gray-300 mb-1">Write your test scripts here:</label>
-          <textarea
-            value={testScript}
-            onChange={(e) => setTestScript(e.target.value)}
-            placeholder={`e.g. pm.test("Status code is 200", function () {\n  pm.response.to.have.status(200);\n});`}
-            className="w-full min-h-[200px] bg-gray-800 text-white p-2 rounded resize-none"
-          />
-          <div className="text-xs text-gray-400 mt-1">
-            Scripts run after response is received. Use pseudo-PostWomen syntax.
-          </div>
-          {bodyType === "form" && (
-            <div className="space-y-2">
-              {formData.map((param, index) => (
-                <div key={index} className="flex space-x-2">
-                  <input
-                    type="checkbox"
-                    checked={param.enabled}
-                    onChange={(e) => handleFormDataChange(index, 'enabled', e.target.checked)}
-                  />
-                  <input
-                    type="text"
-                    placeholder="Key"
-                    value={param.key}
-                    onChange={(e) => handleFormDataChange(index, 'key', e.target.value)}
-                    className="flex-1 px-2 py-1 bg-gray-800 rounded"
-                  />
-                  <input
-                    type="text"
-                    placeholder="Value"
-                    value={param.value}
-                    onChange={(e) => handleFormDataChange(index, 'value', e.target.value)}
-                    className="flex-1 px-2 py-1 bg-gray-800 rounded"
-                  />
-                </div>
-              ))}
-              <button
-                onClick={handleAddFormField}
-                className="bg-green-600 hover:bg-green-700 px-3 py-1 text-sm rounded"
-              >
-                + Add Form Field
-              </button>
-            </div>
-          )}
-        </div>
-      )}
     </div>
-    );
+  );
 };
 
 export default RequestEditor;

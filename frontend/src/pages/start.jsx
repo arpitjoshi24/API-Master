@@ -38,7 +38,6 @@ export default function StartPage() {
 
   return (
     <div className="h-screen w-screen bg-gray-900 text-white overflow-hidden">
-      {/* Split into 3 resizable columns: Sidebar | Request | Output */}
       <Split
         className="flex h-full"
         sizes={[20, 40, 40]}
@@ -48,12 +47,12 @@ export default function StartPage() {
         snapOffset={0}
         dragInterval={1}
       >
-        {/* Sidebar */}
+        {/*Sidebar*/}
         <div className="bg-gray-800 overflow-auto">
           <Sidebar onNewRequest={handleNewRequest} />
         </div>
 
-        {/* Request Editor */}
+        {/*Request Editor*/}
         <div className="overflow-auto border-r border-gray-800">
           <RequestEditor
             key={requestEditorKey}
@@ -62,7 +61,7 @@ export default function StartPage() {
           />
         </div>
 
-        {/* Output Editor */}
+        {/*Output Editor*/}
         <div className="overflow-auto p-4">
           {loading ? (
             <div className="flex justify-center items-center h-full text-lg text-gray-300">
