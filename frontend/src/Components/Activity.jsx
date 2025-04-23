@@ -24,10 +24,13 @@ export default function Activity() {
           {requests.map((req, index) => (
             <div
               key={index}
-              className="bg-gray-800 p-5 rounded-lg shadow-md hover:shadow-xl transition-shadow duration-300 relative"
+              className="bg-gray-800 p-2 rounded-lg shadow-md hover:shadow-xl transition-shadow duration-300 relative"
             >
-              <h3 className="text-lg font-semibold text-white">{req.title}</h3>
-              <p className="text-sm text-gray-300 mt-2">{req.description}</p>
+           <h3 className="text-sm font-semibold text-white truncate max-w-[90%]">
+  {req.title}
+</h3>
+
+              <p className="text-xs text-gray-300 mt-2">{req.description}</p>
               <p className="text-xs text-gray-500 mt-2">{new Date(req.timestamp).toLocaleString()}</p>
               <button
                 onClick={() => deleteRequest(index)}
